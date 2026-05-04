@@ -8,9 +8,10 @@
     <!-- Tailwind CSS (スタイリング用) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (明朝体) -->
+    <!-- Google Fonts (初期状態は Noto Serif JP のみ) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
+    <link id="google-fonts-link" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet" crossorigin="anonymous">
     <!-- html-to-image (画像生成用: 縦書きの再現性が高いため) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 
@@ -20,10 +21,18 @@
         }
 
         .tanka-font {
-            font-family: 'Noto Serif JP', serif;
+            font-family: inherit;
             writing-mode: vertical-rl;
             text-orientation: mixed;
         }
+
+        /* 各フォントの定義 */
+        .font-noto { font-family: 'Noto Serif JP', serif; }
+        .font-shippori { font-family: 'Shippori Mincho', serif; }
+        .font-hina { font-family: 'Hina Mincho', serif; }
+        .font-sawarabi { font-family: 'Sawarabi Mincho', serif; }
+        .font-kaisei { font-family: 'Kaisei Tokumin', serif; }
+        .font-yuji { font-family: 'Yuji Syuku', serif; }
 
         .custom-scrollbar::-webkit-scrollbar {
             height: 8px;
@@ -164,6 +173,17 @@
                                 <option value="16 / 9">16:9 (横長ワイド)</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">フォント</label>
+                            <select id="font-input" class="w-full p-3 border rounded-lg outline-none bg-white">
+                                <option value="font-noto">Noto Serif JP (標準)</option>
+                                <option value="font-shippori">しっぽり明朝 (上品)</option>
+                                <option value="font-hina">ひな明朝 (叙情的)</option>
+                                <option value="font-sawarabi">さわらび明朝 (素朴)</option>
+                                <option value="font-kaisei">解星 特ミン (力強い)</option>
+                                <option value="font-yuji">Yuji Syuku (筆文字風)</option>
+                            </select>
+                        </div>
                         <div class="flex gap-4">
                             <div class="flex-1">
                                 <label class="block text-sm font-medium mb-1">背景色</label>
@@ -243,7 +263,8 @@
             fontSize: document.getElementById('font-size-input'),
             lineHeight: document.getElementById('line-height-input'),
             letterSpacing: document.getElementById('letter-spacing-input'),
-            padding: document.getElementById('padding-input')
+            padding: document.getElementById('padding-input'),
+            fontFamily: document.getElementById('font-input')
         };
 
         const preview = {
@@ -262,6 +283,18 @@
         const copyBtn = document.getElementById('copy-btn');
         const shareTwitterBtn = document.getElementById('share-twitter-btn');
 
+        // フォントと Google Fonts URL の対応マップ
+        const fontMap = {
+            'font-noto': 'Noto+Serif+JP:wght@400;500',
+            'font-shippori': 'Shippori+Mincho',
+            'font-hina': 'Hina+Mincho',
+            'font-sawarabi': 'Sawarabi+Mincho',
+            'font-kaisei': 'Kaisei+Tokumin:wght@400;700',
+            'font-yuji': 'Yuji+Syuku'
+        };
+
+        let currentFont = 'font-noto';
+
         closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.add('hidden');
@@ -271,6 +304,17 @@
             preview.tanka.innerHTML = inputs.tanka.value.replace(/\n/g, '<br>');
             preview.signature.innerText = inputs.signature.value;
 
+            // フォントの動적読み込み
+            const selectedFont = inputs.fontFamily.value;
+            if (selectedFont !== currentFont) {
+                const fontLink = document.getElementById('google-fonts-link');
+                fontLink.href = `https://fonts.googleapis.com/css2?family=${fontMap[selectedFont]}&display=swap`;
+                currentFont = selectedFont;
+            }
+
+            // フォントの適用 (背景色は style で別途設定するため bg-white は除外)
+            preview.area.className = `relative flex items-center justify-center overflow-hidden ${selectedFont}`;
+            
             preview.area.style.aspectRatio = inputs.ratio.value;
             preview.area.style.backgroundColor = inputs.bgColor.value;
             preview.tanka.style.color = inputs.textColor.value;
@@ -310,10 +354,12 @@
             shareTwitterBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                // html-to-imageを使用してキャプチャ
-                // プレビューのスタイルを維持したまま、高解像度で出力するために pixelRatio を設定
+                // フォントの読み込み完了を待機
+                await document.fonts.ready;
+
+                // html-to-image を使用してキャプチャ
                 const dataUrl = await htmlToImage.toPng(preview.area, {
-                    pixelRatio: 3,
+                    pixelRatio: 2,
                     backgroundColor: inputs.bgColor.value,
                     cacheBust: true,
                 });
