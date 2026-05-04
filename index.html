@@ -11,9 +11,10 @@
     <!-- Google Fonts (初期状態は Noto Serif JP のみ) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link id="google-fonts-link" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <link id="google-fonts-link" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&display=swap"
+        rel="stylesheet" crossorigin="anonymous">
     <!-- html-to-image (画像生成用: 縦書きの再現性が高いため) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.min.js"></script>
 
     <style>
         body {
@@ -27,12 +28,29 @@
         }
 
         /* 各フォントの定義 */
-        .font-noto { font-family: 'Noto Serif JP', serif; }
-        .font-shippori { font-family: 'Shippori Mincho', serif; }
-        .font-hina { font-family: 'Hina Mincho', serif; }
-        .font-sawarabi { font-family: 'Sawarabi Mincho', serif; }
-        .font-kaisei { font-family: 'Kaisei Tokumin', serif; }
-        .font-yuji { font-family: 'Yuji Syuku', serif; }
+        .font-noto {
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        .font-shippori {
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        .font-hina {
+            font-family: 'Hina Mincho', serif;
+        }
+
+        .font-sawarabi {
+            font-family: 'Sawarabi Mincho', serif;
+        }
+
+        .font-kaisei {
+            font-family: 'Kaisei Tokumin', serif;
+        }
+
+        .font-yuji {
+            font-family: 'Yuji Syuku', serif;
+        }
 
         .custom-scrollbar::-webkit-scrollbar {
             height: 8px;
@@ -314,7 +332,7 @@
 
             // フォントの適用 (背景色は style で別途設定するため bg-white は除外)
             preview.area.className = `relative flex items-center justify-center overflow-hidden ${selectedFont}`;
-            
+
             preview.area.style.aspectRatio = inputs.ratio.value;
             preview.area.style.backgroundColor = inputs.bgColor.value;
             preview.tanka.style.color = inputs.textColor.value;
