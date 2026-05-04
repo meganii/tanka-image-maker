@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&display=swap" rel="stylesheet">
-    <!-- html2canvas (画像生成用) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html-to-image (画像生成用: 縦書きの再現性が高いため) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 
     <style>
         body {
@@ -113,7 +113,8 @@
         <div class="flex flex-col lg:flex-row gap-8 relative">
 
             <!-- 左側：プレビューエリア -->
-            <div class="w-full lg:w-1/2 flex flex-col items-center sticky top-0 z-40 bg-slate-50 pt-2 pb-4 lg:p-0 lg:static">
+            <div
+                class="w-full lg:w-1/2 flex flex-col items-center sticky top-0 z-40 bg-slate-50 pt-2 pb-4 lg:p-0 lg:static">
                 <div
                     class="lg:sticky lg:top-8 w-full flex justify-center custom-scrollbar overflow-auto p-4 bg-slate-200 rounded-xl shadow-inner max-h-[50vh] lg:max-h-none">
                     <div id="capture-wrapper" class="shadow-md transition-all duration-300 ease-in-out"
@@ -277,7 +278,8 @@
             const paddingValue = `${inputs.padding.value}rem`;
             preview.area.style.padding = paddingValue;
 
-            preview.signature.style.right = paddingValue;
+            preview.signature.style.left = paddingValue;
+            preview.signature.style.right = "auto";
             preview.signature.style.bottom = paddingValue;
             preview.signature.style.color = inputs.textColor.value;
             preview.signature.style.opacity = "0.8";
@@ -308,26 +310,23 @@
             shareTwitterBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                const canvas = await html2canvas(preview.area, {
-                    scale: 3,
-                    useCORS: true,
+                // html-to-imageを使用してキャプチャ
+                // プレビューのスタイルを維持したまま、高解像度で出力するために pixelRatio を設定
+                const dataUrl = await htmlToImage.toPng(preview.area, {
+                    pixelRatio: 3,
                     backgroundColor: inputs.bgColor.value,
-                    logging: false
+                    cacheBust: true,
                 });
-
-                const dataUrl = canvas.toDataURL('image/png');
-
-                // 本来のダウンロード処理 (ローカル環境用)
-                try {
-                    const link = document.createElement('a');
-                    link.download = `tanka_${new Date().getTime()}.png`;
-                    link.href = dataUrl;
-                    link.click();
-                } catch (e) { }
 
                 // モーダル表示
                 resultImage.src = dataUrl;
                 modal.classList.remove('hidden');
+
+                // ダウンロードリンクの作成と実行
+                const link = document.createElement('a');
+                link.download = `tanka_${new Date().getTime()}.png`;
+                link.href = dataUrl;
+                link.click();
 
                 // コピーボタンのテキストリセット
                 copyBtn.querySelector('span').innerText = "1. 画像をコピー";
@@ -372,10 +371,10 @@
             // 投稿文面の作成（短歌を1行にして、ハッシュタグを付ける）
             const rawTanka = inputs.tanka.value.replace(/\n/g, ' ');
             const author = inputs.signature.value ? ` / ${inputs.signature.value}` : '';
-            const tweetText = `${rawTanka}${author}\n\n#短歌 #短歌画像メーカー`;
+            const tweetText = `${rawTanka}${author}\n\n#短歌 #tanka`;
 
             // XのインテントURLを生成
-            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+            const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
 
             // 新しいタブで開く
             window.open(twitterUrl, '_blank');
